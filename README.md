@@ -3,6 +3,10 @@
 A cute pixel crab that walks along the top of your taskbar and narrates what
 Claude Code and your git repos are up to.
 
+![maximumcrab walking across the taskbar, narrating a live Claude Code session](assets/demo.gif)
+
+*(Actual footage of the crab narrating the recording of this very GIF.)*
+
 ## What it does
 
 - **Walks across your screen** in a transparent, click-through, always-on-top
