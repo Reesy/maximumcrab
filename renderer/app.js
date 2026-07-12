@@ -7,6 +7,7 @@
   const IDLE_CHATTER_SHOW_MS = 8000;
   const SHELL_W = 72;
   const SHELL_RIGHT = 20;
+  const SHELL_FADED_OPACITY = 0.2;
 
   const crabEl = document.getElementById("crab");
   const canvas = document.getElementById("crab-canvas");
@@ -53,6 +54,8 @@
   let shellShownAt = 0;
   let shellOpacity = 1;
   let hoverShell = false;
+  let shellInTray = false;
+  let lastTrayFrame = -1;
 
   // ---------- world state ----------
   let claudeSessions = [];
@@ -98,10 +101,12 @@
 
   function tuckIn() {
     crabEl.classList.add("hidden");
-    shellEl.classList.remove("hidden");
-    shellShownAt = performance.now();
-    shellOpacity = 1;
-    shellEl.style.opacity = "1";
+    if (!shellInTray) {
+      shellEl.classList.remove("hidden");
+      shellShownAt = performance.now();
+      shellOpacity = 1;
+      shellEl.style.opacity = "1";
+    }
     setMode("asleep");
   }
 
@@ -317,21 +322,37 @@
 
     // shell rattle + fade
     if (mode === "asleep") {
+      const rate = eventTimes.length;
       if (rattleEnergy > 0.01) {
-        const rate = eventTimes.length;
-        const wobble = Math.sin((now / 1000) * (16 + rate * 3)) * 9 * rattleEnergy;
-        const jitter = Math.sin((now / 1000) * (23 + rate * 4)) * 1.5 * rattleEnergy;
-        shellEl.style.transform = `rotate(${wobble}deg) translateX(${jitter}px)`;
         rattleEnergy *= Math.exp(-dt * 1.4);
-        if (rattleEnergy <= 0.01) shellEl.style.transform = "";
       }
-      // fully visible for a few seconds after tucking in or on hover;
-      // otherwise barely-there — it keeps rattling, just transparently
-      const wantVisible = hoverShell || now - shellShownAt < 4000;
-      const target = wantVisible ? 1 : 0.1;
-      const rate = target > shellOpacity ? 5 : 0.3; // quick to appear, slow to fade
-      shellOpacity += Math.max(-rate * dt, Math.min(rate * dt, target - shellOpacity));
-      shellEl.style.opacity = shellOpacity.toFixed(3);
+      if (shellInTray) {
+        // the shell lives in the system tray: rattle by swapping tilt frames
+        let frame = 0;
+        if (rattleEnergy > 0.05) {
+          const s = Math.sin((now / 1000) * (16 + rate * 3));
+          frame = s > 0.3 ? 1 : s < -0.3 ? 2 : 0;
+        }
+        if (frame !== lastTrayFrame) {
+          lastTrayFrame = frame;
+          window.crabAPI.sendTrayFrame(frame);
+        }
+      } else {
+        if (rattleEnergy > 0.05) {
+          const wobble = Math.sin((now / 1000) * (16 + rate * 3)) * 9 * rattleEnergy;
+          const jitter = Math.sin((now / 1000) * (23 + rate * 4)) * 1.5 * rattleEnergy;
+          shellEl.style.transform = `rotate(${wobble}deg) translateX(${jitter}px)`;
+        } else {
+          shellEl.style.transform = "";
+        }
+        // fully visible for a few seconds after tucking in or on hover;
+        // otherwise barely-there — it keeps rattling, just transparently
+        const wantVisible = hoverShell || now - shellShownAt < 4000;
+        const target = wantVisible ? 1 : SHELL_FADED_OPACITY;
+        const ease = target > shellOpacity ? 5 : 0.3; // quick to appear, slow to fade
+        shellOpacity += Math.max(-ease * dt, Math.min(ease * dt, target - shellOpacity));
+        shellEl.style.opacity = shellOpacity.toFixed(3);
+      }
     }
 
     if (mode !== "asleep") {
@@ -398,6 +419,20 @@
   window.crabAPI.onPaused((p) => { paused = p; });
   window.crabAPI.onGoHome(goHome);
   window.crabAPI.onWake(wake);
+  window.crabAPI.onShellInTray((inTray) => {
+    shellInTray = inTray;
+    lastTrayFrame = -1;
+    if (mode === "asleep") {
+      if (inTray) {
+        shellEl.classList.add("hidden");
+      } else {
+        shellEl.classList.remove("hidden");
+        shellShownAt = performance.now();
+        shellOpacity = 1;
+        shellEl.style.opacity = "1";
+      }
+    }
+  });
 
   // ---------- tray icon ----------
   function sendTrayIcon() {
@@ -410,7 +445,28 @@
     window.crabAPI.sendTrayIcon(c.toDataURL("image/png"));
   }
 
+  // shell tray icons: straight + two tilts, for rattling inside the tray
+  function sendShellIcons() {
+    const off = document.createElement("canvas");
+    off.width = CRAB.SHELL_W;
+    off.height = CRAB.SHELL_H;
+    CRAB.drawShell(off.getContext("2d"));
+    const urls = [0, -0.28, 0.28].map((angle) => {
+      const c = document.createElement("canvas");
+      c.width = 24;
+      c.height = 20;
+      const g = c.getContext("2d");
+      g.imageSmoothingEnabled = false;
+      g.translate(12, 10);
+      g.rotate(angle);
+      g.drawImage(off, -CRAB.SHELL_W / 2, -CRAB.SHELL_H / 2);
+      return c.toDataURL("image/png");
+    });
+    window.crabAPI.sendShellIcons(urls);
+  }
+
   setMode("walk", 4000);
   sendTrayIcon();
+  sendShellIcons();
   requestAnimationFrame(frame);
 })();
