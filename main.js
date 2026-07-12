@@ -10,6 +10,7 @@ const WINDOW_HEIGHT = 340;
 let win = null;
 let tray = null;
 let paused = false;
+let sleeping = false;
 
 function positionWindow() {
   const { workArea } = screen.getPrimaryDisplay();
@@ -57,8 +58,18 @@ async function pollState() {
   win.webContents.send("state", { claude, git, paused });
 }
 
+const crabControl = {
+  sleep: () => { if (win && !win.isDestroyed()) win.webContents.send("go-home"); },
+  wake: () => { if (win && !win.isDestroyed()) win.webContents.send("wake-up"); },
+  isAsleep: () => sleeping
+};
+
 function buildMenu() {
   return Menu.buildFromTemplate([
+    {
+      label: sleeping ? "Wake him up 🐚" : "Send him home 🐚",
+      click: () => (sleeping ? crabControl.wake() : crabControl.sleep())
+    },
     {
       label: paused ? "Resume walking" : "Pause walking",
       click: () => {
@@ -78,6 +89,11 @@ function buildMenu() {
     { label: "Quit maximumcrab", click: () => app.quit() }
   ]);
 }
+
+ipcMain.on("sleep-state", (_e, isSleeping) => {
+  sleeping = isSleeping;
+  if (tray) tray.setContextMenu(buildMenu());
+});
 
 ipcMain.on("set-interactive", (_e, interactive) => {
   if (win && !win.isDestroyed()) {
@@ -103,7 +119,7 @@ app.whenReady().then(() => {
     pollState();
     setInterval(pollState, 3000);
   });
-  startControlServer(capture);
+  startControlServer(capture, crabControl);
 });
 
 app.on("window-all-closed", () => app.quit());

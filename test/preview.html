@@ -33,6 +33,18 @@
       fig.appendChild(c); fig.appendChild(cap);
       document.getElementById("row").appendChild(fig);
     }
+    {
+      const fig = document.createElement("figure");
+      const c = document.createElement("canvas");
+      c.width = CRAB.SHELL_W; c.height = CRAB.SHELL_H;
+      c.style.width = CRAB.SHELL_W * 8 + "px";
+      c.style.height = CRAB.SHELL_H * 8 + "px";
+      CRAB.drawShell(c.getContext("2d"));
+      const cap = document.createElement("figcaption");
+      cap.textContent = "shell (home)";
+      fig.appendChild(c); fig.appendChild(cap);
+      document.getElementById("row").appendChild(fig);
+    }
   </script>
 </body>
 </html>
