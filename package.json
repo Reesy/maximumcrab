@@ -8,5 +8,10 @@
   },
   "devDependencies": {
     "electron": "^37.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Reesy/maximumcrab.git"
   }
 }
