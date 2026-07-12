@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld("crabAPI", {
   onGoHome: (cb) => ipcRenderer.on("go-home", () => cb()),
   onWake: (cb) => ipcRenderer.on("wake-up", () => cb()),
   onShellInTray: (cb) => ipcRenderer.on("shell-in-tray", (_e, v) => cb(v)),
+  onWarp: (cb) => ipcRenderer.on("warp", (_e, params) => cb(params)),
   sendSleepState: (sleeping) => ipcRenderer.send("sleep-state", sleeping),
   sendShellIcons: (urls) => ipcRenderer.send("shell-icons", urls),
   sendTrayFrame: (i) => ipcRenderer.send("tray-frame", i),

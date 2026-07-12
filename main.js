@@ -5,8 +5,6 @@ const { getGitState } = require("./lib/git-state");
 const capture = require("./lib/capture");
 const { startControlServer } = require("./lib/control-server");
 
-const WINDOW_HEIGHT = 340;
-
 let win = null;
 let tray = null;
 let paused = false;
@@ -25,13 +23,10 @@ function updateTrayIcon(frame = 0) {
 }
 
 function positionWindow() {
+  // full work-area overlay: the crab can walk the floor, climb the walls,
+  // and hang from the ceiling
   const { workArea } = screen.getPrimaryDisplay();
-  win.setBounds({
-    x: workArea.x,
-    y: workArea.y + workArea.height - WINDOW_HEIGHT,
-    width: workArea.width,
-    height: WINDOW_HEIGHT
-  });
+  win.setBounds(workArea);
 }
 
 function createWindow() {
@@ -79,6 +74,7 @@ const crabControl = {
     updateTrayIcon();
     if (tray) tray.setContextMenu(buildMenu());
   },
+  warp: (params) => { if (win && !win.isDestroyed()) win.webContents.send("warp", params); },
   isAsleep: () => sleeping,
   isInTray: () => shellInTray
 };

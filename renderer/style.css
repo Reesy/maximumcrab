@@ -37,13 +37,17 @@ body {
 
 #crab {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   width: 180px;
   height: 140px;
-  cursor: pointer;
+  cursor: grab;
   will-change: transform;
   transition: opacity 0.25s ease;
+}
+
+#crab:active {
+  cursor: grabbing;
 }
 
 #crab.hidden {
@@ -95,7 +99,7 @@ body {
 
 #bubble {
   position: absolute;
-  bottom: 138px;
+  top: 0;
   max-width: 320px;
   min-width: 180px;
   will-change: transform;
@@ -158,14 +162,28 @@ body {
 }
 
 .bubble-tail {
+  position: absolute;
+  bottom: -7px;
+  left: 40px;
   width: 14px;
   height: 14px;
   background: var(--card-bg);
   border-right: 1px solid var(--card-border);
   border-bottom: 1px solid var(--card-border);
   transform: rotate(45deg);
-  margin: -8px 0 0 40px;
   border-radius: 0 0 3px 0;
+}
+
+/* crab on the ceiling: bubble sits below him, tail points up */
+#bubble.tail-top .bubble-tail {
+  bottom: auto;
+  top: -7px;
+  transform: rotate(225deg);
+}
+
+/* crab on a wall: bubble sits beside him, no tail */
+#bubble.tail-none .bubble-tail {
+  display: none;
 }
 
 .spinner {
