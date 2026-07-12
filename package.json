@@ -1,0 +1,12 @@
+{
+  "name": "maximumcrab",
+  "version": "1.0.0",
+  "description": "A cute pixel crab that walks across your screen narrating your Claude Code and git activity",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^37.0.0"
+  }
+}
