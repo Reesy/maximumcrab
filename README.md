@@ -40,6 +40,11 @@ frame. Park it over anything (the framed content stays fully clickable — only
 the toolbar and corner grip take the mouse), pick a length and fps, hit
 **● rec**. The GIF lands in `~/Videos/crabcap/`.
 
+![crabcap recording the crab walking through its own capture frame](assets/crabcap-demo.gif)
+
+*(A GIF of crabcap taking a GIF of the crab. The crab's GIF also came out
+great.)*
+
 ### Driving it from an agent
 
 The app listens on `http://127.0.0.1:43117` (loopback only) so any tool that
