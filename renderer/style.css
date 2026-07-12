@@ -1,0 +1,161 @@
+/* Declaring color-scheme opts out of Chromium force-dark inversion;
+   we style both themes explicitly instead. */
+:root {
+  color-scheme: light dark;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --card-title: #1d1d22;
+  --card-text: #3c3c44;
+  --card-foot: #8a8a94;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --card-bg: #26262c;
+    --card-border: rgba(255, 255, 255, 0.1);
+    --card-title: #f2f2f5;
+    --card-text: #c9c9d2;
+    --card-foot: #8f8f9a;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  user-select: none;
+}
+
+#crab {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 180px;
+  height: 140px;
+  cursor: pointer;
+  will-change: transform;
+}
+
+#crab-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+#shadow {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0) 70%);
+  z-index: -1;
+}
+
+#bubble {
+  position: absolute;
+  bottom: 138px;
+  max-width: 320px;
+  min-width: 180px;
+  will-change: transform;
+  transition: opacity 0.25s ease, translate 0.25s ease;
+  opacity: 1;
+}
+
+#bubble.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bubble-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  padding: 12px 14px;
+  color: var(--card-title);
+}
+
+.bubble-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-bottom: 4px;
+  text-transform: capitalize;
+}
+
+#bubble-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#bubble-body {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--card-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+#bubble-foot {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--card-foot);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#bubble-foot.hidden {
+  display: none;
+}
+
+.bubble-tail {
+  width: 14px;
+  height: 14px;
+  background: var(--card-bg);
+  border-right: 1px solid var(--card-border);
+  border-bottom: 1px solid var(--card-border);
+  transform: rotate(45deg);
+  margin: -8px 0 0 40px;
+  border-radius: 0 0 3px 0;
+}
+
+.spinner {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #d8d8de;
+  border-top-color: #6b6bef;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+.spinner.hidden {
+  display: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

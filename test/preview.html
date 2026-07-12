@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>crab preview</title>
+  <style>
+    body { background: #cfe8ff; font-family: monospace; padding: 20px; }
+    .row { display: flex; gap: 24px; align-items: flex-end; margin-bottom: 20px; }
+    figure { text-align: center; }
+    canvas { image-rendering: pixelated; background: rgba(255,255,255,0.5); }
+  </style>
+</head>
+<body>
+  <div class="row" id="row"></div>
+  <script src="../renderer/crab.js"></script>
+  <script>
+    const poses = [
+      { label: "idle", opts: { t: 0, walking: false, look: 0 } },
+      { label: "walk A", opts: { t: 0.09, walking: true, look: 1 } },
+      { label: "walk B", opts: { t: 0.44, walking: true, look: 1 } },
+      { label: "blink", opts: { t: 0, walking: false, blink: true, look: 0 } },
+      { label: "wave", opts: { t: 0.13, walking: false, wave: true, look: 0 } }
+    ];
+    for (const p of poses) {
+      const fig = document.createElement("figure");
+      const c = document.createElement("canvas");
+      c.width = CRAB.W; c.height = CRAB.H;
+      c.style.width = CRAB.W * 8 + "px";
+      c.style.height = CRAB.H * 8 + "px";
+      CRAB.draw(c.getContext("2d"), p.opts);
+      const cap = document.createElement("figcaption");
+      cap.textContent = p.label;
+      fig.appendChild(c); fig.appendChild(cap);
+      document.getElementById("row").appendChild(fig);
+    }
+  </script>
+</body>
+</html>
