@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain, screen, Menu, Tray, nativeImage } = require
 const path = require("path");
 const { getClaudeState } = require("./lib/claude-state");
 const { getGitState } = require("./lib/git-state");
+const capture = require("./lib/capture");
+const { startControlServer } = require("./lib/control-server");
 
 const WINDOW_HEIGHT = 340;
 
@@ -65,6 +67,13 @@ function buildMenu() {
         if (tray) tray.setContextMenu(buildMenu());
       }
     },
+    {
+      label: "GIF capture frame 🎥",
+      click: () => {
+        if (capture.getState().visible) capture.hideFrame();
+        else capture.showFrame();
+      }
+    },
     { type: "separator" },
     { label: "Quit maximumcrab", click: () => app.quit() }
   ]);
@@ -94,6 +103,7 @@ app.whenReady().then(() => {
     pollState();
     setInterval(pollState, 3000);
   });
+  startControlServer(capture);
 });
 
 app.on("window-all-closed", () => app.quit());
