@@ -65,6 +65,21 @@
   let nextIdleLine = performance.now() + 6000;
   let idleLineIndex = 0;
 
+  // The fade loop drives #shell's opacity inline, and inline styles override
+  // the .hidden class — always clear them together or the shell stays visible.
+  function hideShellEl() {
+    shellEl.classList.add("hidden");
+    shellEl.style.opacity = "";
+    shellEl.style.transform = "";
+  }
+
+  function showShellEl() {
+    shellEl.classList.remove("hidden");
+    shellShownAt = performance.now();
+    shellOpacity = 1;
+    shellEl.style.opacity = "1";
+  }
+
   function shellX() {
     return window.innerWidth - SHELL_W - SHELL_RIGHT;
   }
@@ -101,22 +116,14 @@
 
   function tuckIn() {
     crabEl.classList.add("hidden");
-    if (shellInTray) {
-      // tray mode renders nothing on screen
-      shellEl.classList.add("hidden");
-    } else {
-      shellEl.classList.remove("hidden");
-      shellShownAt = performance.now();
-      shellOpacity = 1;
-      shellEl.style.opacity = "1";
-    }
+    if (shellInTray) hideShellEl(); // tray mode renders nothing on screen
+    else showShellEl();
     setMode("asleep");
   }
 
   function wake() {
     if (mode !== "asleep") return;
-    shellEl.classList.add("hidden");
-    shellEl.style.opacity = "";
+    hideShellEl();
     crabEl.classList.remove("hidden");
     homebody = true;
     // zoomies duration scales with how much it missed while sleeping
@@ -434,14 +441,11 @@
       }
       crabEl.classList.add("hidden");
       bubbleEl.classList.add("hidden");
-      shellEl.classList.add("hidden");
+      hideShellEl();
       setMode("asleep");
     } else if (mode === "asleep") {
       // coming back on screen as the regular shell
-      shellEl.classList.remove("hidden");
-      shellShownAt = performance.now();
-      shellOpacity = 1;
-      shellEl.style.opacity = "1";
+      showShellEl();
     }
   });
 
