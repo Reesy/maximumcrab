@@ -1,0 +1,155 @@
+:root {
+  color-scheme: light dark;
+  --bar-bg: #ffffff;
+  --bar-text: #1d1d22;
+  --bar-muted: #8a8a94;
+  --accent: #ff6250;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bar-bg: #26262c;
+    --bar-text: #f2f2f5;
+    --bar-muted: #8f8f9a;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 12.5px;
+  user-select: none;
+}
+
+#toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: var(--bar-bg);
+  color: var(--bar-text);
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  -webkit-app-region: drag;
+}
+
+#logo {
+  font-weight: 700;
+}
+
+#size {
+  color: var(--bar-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+#toolbar label {
+  color: var(--bar-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  -webkit-app-region: no-drag;
+}
+
+#toolbar select {
+  -webkit-app-region: no-drag;
+  background: transparent;
+  color: var(--bar-text);
+  border: 1px solid var(--bar-muted);
+  border-radius: 6px;
+  padding: 1px 4px;
+  font: inherit;
+}
+
+#toolbar button {
+  -webkit-app-region: no-drag;
+  font: inherit;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+#rec {
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+#rec:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+#status {
+  margin-left: auto;
+  color: var(--bar-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 45%;
+}
+
+#status .path {
+  cursor: pointer;
+  text-decoration: underline;
+  -webkit-app-region: no-drag;
+}
+
+#close {
+  background: transparent;
+  color: var(--bar-muted);
+}
+
+#close:hover {
+  color: var(--bar-text);
+}
+
+/* The framed (recorded) region: a dashed border around a transparent,
+   click-through hole. The border sits OUTSIDE the recorded rectangle. */
+#region {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 4px dashed var(--accent);
+  border-radius: 0 0 10px 10px;
+  pointer-events: none;
+}
+
+body.recording #region {
+  border-style: solid;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { border-color: var(--accent); }
+  50% { border-color: #ffb0a6; }
+}
+
+#grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nwse-resize;
+  background:
+    linear-gradient(135deg, transparent 0 50%, var(--accent) 50% 60%, transparent 60% 70%, var(--accent) 70% 80%, transparent 80%);
+  border-bottom-right-radius: 10px;
+}

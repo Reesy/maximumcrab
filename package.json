@@ -13,5 +13,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Reesy/maximumcrab.git"
+  },
+  "dependencies": {
+    "gifenc": "^1.0.3"
   }
 }
