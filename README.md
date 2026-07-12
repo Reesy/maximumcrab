@@ -30,6 +30,11 @@ npm start
 
 - The window is click-through except over the crab, its bubble, and the shell.
 - **Click the crab** — it hops, and toggles the speech bubble on/off.
+- **Drag the crab** — pick him up (he dangles and wiggles) and drop him
+  anywhere: he attaches to the nearest edge. He walks the floor, climbs the
+  walls hand-over-hand, and hangs upside down from the top of your monitor,
+  wandering the whole perimeter — corners included — until you drag him again
+  or send him home.
 - **Right-click the crab** (or the tray icon) — send him home, pause walking,
   open the GIF capture frame, or quit.
 

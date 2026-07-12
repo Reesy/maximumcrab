@@ -132,10 +132,11 @@
    *   look: -1 | 0 | 1  (direction of travel; pupils follow)
    *   wave: bool  (idle claw wave)
    *   frenzy: bool  (post-nap zoomies: legs go wild)
+   *   climb: bool  (on a wall or ceiling: hand-over-hand claw reach)
    * }
    */
   function draw(ctx, opts) {
-    const { t = 0, walking = false, blink = false, look = 0, wave = false, frenzy = false } = opts || {};
+    const { t = 0, walking = false, blink = false, look = 0, wave = false, frenzy = false, climb = false } = opts || {};
     const g = makeGrid(W, H);
 
     const phase = Math.sin(t * (frenzy ? 26 : 9));
@@ -159,10 +160,17 @@
     // --- arms + claws ---
     const clawBob = walking ? Math.round(Math.sin(t * 9 + Math.PI / 2)) : 0;
     const waveLift = wave ? -3 + Math.round(Math.sin(t * 12) * 1.5) : 0;
-    line(g, 8.5, 14 + bob, 6, 12 + bob + clawBob + waveLift, C.dark, 2);
-    line(g, W - 1 - 8.5, 14 + bob, W - 1 - 6, 12 + bob + clawBob, C.dark, 2);
-    drawClaw(g, 4.5, 10.5 + bob + clawBob + waveLift);
-    drawClaw(g, W - 1 - 4.5, 10.5 + bob + clawBob);
+    let liftL = clawBob + waveLift;
+    let liftR = clawBob;
+    if (climb && walking) {
+      // hand-over-hand: claws alternate reaching
+      liftL = Math.round(Math.sin(t * 8) * 2) - 1;
+      liftR = Math.round(Math.sin(t * 8 + Math.PI) * 2) - 1;
+    }
+    line(g, 8.5, 14 + bob, 6, 12 + bob + liftL, C.dark, 2);
+    line(g, W - 1 - 8.5, 14 + bob, W - 1 - 6, 12 + bob + liftR, C.dark, 2);
+    drawClaw(g, 4.5, 10.5 + bob + liftL);
+    drawClaw(g, W - 1 - 4.5, 10.5 + bob + liftR);
 
     // --- shell ---
     disc(g, 17.5, 15.5 + bob, 9.5, 6.5, C.body);
