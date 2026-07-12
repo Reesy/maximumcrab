@@ -101,12 +101,12 @@
 
   function tuckIn() {
     crabEl.classList.add("hidden");
-    if (!shellInTray) {
-      shellEl.classList.remove("hidden");
-      shellShownAt = performance.now();
-      shellOpacity = 1;
-      shellEl.style.opacity = "1";
-    }
+    // the shell always appears first — in tray mode it fades out to the tray
+    // after settling, so you see where he went
+    shellEl.classList.remove("hidden");
+    shellShownAt = performance.now();
+    shellOpacity = 1;
+    shellEl.style.opacity = "1";
     setMode("asleep");
   }
 
@@ -326,8 +326,32 @@
       if (rattleEnergy > 0.01) {
         rattleEnergy *= Math.exp(-dt * 1.4);
       }
-      if (shellInTray) {
-        // the shell lives in the system tray: rattle by swapping tilt frames
+      // on-screen wobble (also plays during the tray-mode fade-out)
+      if (!shellEl.classList.contains("hidden")) {
+        if (rattleEnergy > 0.05) {
+          const wobble = Math.sin((now / 1000) * (16 + rate * 3)) * 9 * rattleEnergy;
+          const jitter = Math.sin((now / 1000) * (23 + rate * 4)) * 1.5 * rattleEnergy;
+          shellEl.style.transform = `rotate(${wobble}deg) translateX(${jitter}px)`;
+        } else {
+          shellEl.style.transform = "";
+        }
+        // fade: full for a few seconds after tucking in (or on hover), then
+        // barely-there; in tray mode, hold at 20% briefly and then slip away
+        const age = now - shellShownAt;
+        let target;
+        if (hoverShell && !shellInTray) target = 1;
+        else if (age < 4000) target = 1;
+        else if (!shellInTray || age < 9000) target = SHELL_FADED_OPACITY;
+        else target = 0;
+        const ease = target > shellOpacity ? 5 : 0.3; // quick to appear, slow to fade
+        shellOpacity += Math.max(-ease * dt, Math.min(ease * dt, target - shellOpacity));
+        shellEl.style.opacity = shellOpacity.toFixed(3);
+        if (target === 0 && shellOpacity < 0.02) {
+          shellEl.classList.add("hidden");
+          lastTrayFrame = -1;
+        }
+      } else if (shellInTray) {
+        // fully tucked into the tray: rattle by swapping tilt frames
         let frame = 0;
         if (rattleEnergy > 0.05) {
           const s = Math.sin((now / 1000) * (16 + rate * 3));
@@ -337,21 +361,6 @@
           lastTrayFrame = frame;
           window.crabAPI.sendTrayFrame(frame);
         }
-      } else {
-        if (rattleEnergy > 0.05) {
-          const wobble = Math.sin((now / 1000) * (16 + rate * 3)) * 9 * rattleEnergy;
-          const jitter = Math.sin((now / 1000) * (23 + rate * 4)) * 1.5 * rattleEnergy;
-          shellEl.style.transform = `rotate(${wobble}deg) translateX(${jitter}px)`;
-        } else {
-          shellEl.style.transform = "";
-        }
-        // fully visible for a few seconds after tucking in or on hover;
-        // otherwise barely-there — it keeps rattling, just transparently
-        const wantVisible = hoverShell || now - shellShownAt < 4000;
-        const target = wantVisible ? 1 : SHELL_FADED_OPACITY;
-        const ease = target > shellOpacity ? 5 : 0.3; // quick to appear, slow to fade
-        shellOpacity += Math.max(-ease * dt, Math.min(ease * dt, target - shellOpacity));
-        shellEl.style.opacity = shellOpacity.toFixed(3);
       }
     }
 
@@ -422,15 +431,19 @@
   window.crabAPI.onShellInTray((inTray) => {
     shellInTray = inTray;
     lastTrayFrame = -1;
-    if (mode === "asleep") {
-      if (inTray) {
-        shellEl.classList.add("hidden");
-      } else {
-        shellEl.classList.remove("hidden");
-        shellShownAt = performance.now();
-        shellOpacity = 1;
-        shellEl.style.opacity = "1";
+    if (inTray) {
+      if (mode === "asleep") {
+        // already home: skip the full-visibility grace, go 20% -> gone
+        shellShownAt = Math.min(shellShownAt, performance.now() - 4000);
+      } else if (!asleep()) {
+        goHome(); // run home first, then fade out to the tray
       }
+    } else if (mode === "asleep") {
+      // coming back on screen
+      shellEl.classList.remove("hidden");
+      shellShownAt = performance.now();
+      shellOpacity = 1;
+      shellEl.style.opacity = "1";
     }
   });
 

@@ -83,7 +83,7 @@ function buildMenu() {
       click: () => (sleeping ? crabControl.wake() : crabControl.sleep())
     },
     {
-      label: shellInTray ? "Show shell on screen" : "Hide shell in tray",
+      label: "Hide in tray (crabcap still works)",
       type: "checkbox",
       checked: shellInTray,
       click: () => {
