@@ -73,7 +73,14 @@ async function pollState() {
 const crabControl = {
   sleep: () => { if (win && !win.isDestroyed()) win.webContents.send("go-home"); },
   wake: () => { if (win && !win.isDestroyed()) win.webContents.send("wake-up"); },
-  isAsleep: () => sleeping
+  setTray: (inTray) => {
+    shellInTray = !!inTray;
+    if (win && !win.isDestroyed()) win.webContents.send("shell-in-tray", shellInTray);
+    updateTrayIcon();
+    if (tray) tray.setContextMenu(buildMenu());
+  },
+  isAsleep: () => sleeping,
+  isInTray: () => shellInTray
 };
 
 function buildMenu() {
@@ -86,12 +93,7 @@ function buildMenu() {
       label: "Hide in tray (crabcap still works)",
       type: "checkbox",
       checked: shellInTray,
-      click: () => {
-        shellInTray = !shellInTray;
-        if (win && !win.isDestroyed()) win.webContents.send("shell-in-tray", shellInTray);
-        updateTrayIcon();
-        if (tray) tray.setContextMenu(buildMenu());
-      }
+      click: () => crabControl.setTray(!shellInTray)
     },
     {
       label: paused ? "Resume walking" : "Pause walking",
@@ -144,9 +146,8 @@ ipcMain.on("tray-icon", (_e, dataUrl) => {
   tray.setToolTip("maximumcrab — your desk crab");
   tray.setContextMenu(buildMenu());
   // clicking the tray shell wakes him, same as clicking the on-screen shell
-  tray.on("click", () => {
-    if (sleeping) crabControl.wake();
-  });
+  // (unconditional: the renderer no-ops if he's already awake)
+  tray.on("click", () => crabControl.wake());
 });
 
 app.whenReady().then(() => {

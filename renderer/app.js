@@ -444,8 +444,8 @@
       hideShellEl();
       setMode("asleep");
     } else if (mode === "asleep") {
-      // coming back on screen as the regular shell
-      showShellEl();
+      // unchecking "hide in tray" means "bring him back"
+      wake();
     }
   });
 
