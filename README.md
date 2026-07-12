@@ -43,11 +43,10 @@ tucks into a small seashell. While he sleeps:
 - The shell **rattles** when Claude or git activity comes in — even while
   faded — it never shows the content, and the faster the updates arrive, the
   harder it rattles.
-- Prefer a totally clear screen? Toggle **Hide in tray**: if he's out, he
-  runs home first, the shell fades to 20%, holds a beat, then slips away
-  entirely — the tray icon becomes the shell, rattles there when activity
-  arrives, and clicking it wakes him. The crabcap recorder keeps working
-  the whole time.
+- Prefer a totally clear screen? Toggle **Hide in tray**: everything on
+  screen vanishes instantly — the tray icon becomes the shell, rattles
+  there when activity arrives, and clicking it wakes him. The crabcap
+  recorder keeps working the whole time.
 - **Click the shell** to wake him: he bursts out with zoomies proportional to
   how much he missed, then settles down standing beside his shell spot.
 - Once woken, he's a home-body: he mostly stands at the far right, takes the

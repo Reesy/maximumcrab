@@ -101,12 +101,15 @@
 
   function tuckIn() {
     crabEl.classList.add("hidden");
-    // the shell always appears first — in tray mode it fades out to the tray
-    // after settling, so you see where he went
-    shellEl.classList.remove("hidden");
-    shellShownAt = performance.now();
-    shellOpacity = 1;
-    shellEl.style.opacity = "1";
+    if (shellInTray) {
+      // tray mode renders nothing on screen
+      shellEl.classList.add("hidden");
+    } else {
+      shellEl.classList.remove("hidden");
+      shellShownAt = performance.now();
+      shellOpacity = 1;
+      shellEl.style.opacity = "1";
+    }
     setMode("asleep");
   }
 
@@ -326,7 +329,6 @@
       if (rattleEnergy > 0.01) {
         rattleEnergy *= Math.exp(-dt * 1.4);
       }
-      // on-screen wobble (also plays during the tray-mode fade-out)
       if (!shellEl.classList.contains("hidden")) {
         if (rattleEnergy > 0.05) {
           const wobble = Math.sin((now / 1000) * (16 + rate * 3)) * 9 * rattleEnergy;
@@ -335,23 +337,15 @@
         } else {
           shellEl.style.transform = "";
         }
-        // fade: full for a few seconds after tucking in (or on hover), then
-        // barely-there; in tray mode, hold at 20% briefly and then slip away
-        const age = now - shellShownAt;
-        let target;
-        if (hoverShell && !shellInTray) target = 1;
-        else if (age < 4000) target = 1;
-        else if (!shellInTray || age < 9000) target = SHELL_FADED_OPACITY;
-        else target = 0;
+        // fully visible for a few seconds after tucking in or on hover;
+        // otherwise barely-there — it keeps rattling, just transparently
+        const wantVisible = hoverShell || now - shellShownAt < 4000;
+        const target = wantVisible ? 1 : SHELL_FADED_OPACITY;
         const ease = target > shellOpacity ? 5 : 0.3; // quick to appear, slow to fade
         shellOpacity += Math.max(-ease * dt, Math.min(ease * dt, target - shellOpacity));
         shellEl.style.opacity = shellOpacity.toFixed(3);
-        if (target === 0 && shellOpacity < 0.02) {
-          shellEl.classList.add("hidden");
-          lastTrayFrame = -1;
-        }
       } else if (shellInTray) {
-        // fully tucked into the tray: rattle by swapping tilt frames
+        // tucked into the tray: rattle by swapping tilt frames
         let frame = 0;
         if (rattleEnergy > 0.05) {
           const s = Math.sin((now / 1000) * (16 + rate * 3));
@@ -432,14 +426,18 @@
     shellInTray = inTray;
     lastTrayFrame = -1;
     if (inTray) {
-      if (mode === "asleep") {
-        // already home: skip the full-visibility grace, go 20% -> gone
-        shellShownAt = Math.min(shellShownAt, performance.now() - 4000);
-      } else if (!asleep()) {
-        goHome(); // run home first, then fade out to the tray
+      // render nothing: crab, bubble and shell all vanish instantly
+      if (!asleep()) {
+        busySinceSleep = 0;
+        eventTimes = [];
+        window.crabAPI.sendSleepState(true);
       }
+      crabEl.classList.add("hidden");
+      bubbleEl.classList.add("hidden");
+      shellEl.classList.add("hidden");
+      setMode("asleep");
     } else if (mode === "asleep") {
-      // coming back on screen
+      // coming back on screen as the regular shell
       shellEl.classList.remove("hidden");
       shellShownAt = performance.now();
       shellOpacity = 1;
