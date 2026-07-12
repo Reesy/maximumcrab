@@ -325,9 +325,9 @@
         rattleEnergy *= Math.exp(-dt * 1.4);
         if (rattleEnergy <= 0.01) shellEl.style.transform = "";
       }
-      // fully visible for a few seconds after tucking in, when rattling, or on
-      // hover; otherwise slowly fade to barely-there
-      const wantVisible = hoverShell || rattleEnergy > 0.05 || now - shellShownAt < 4000;
+      // fully visible for a few seconds after tucking in or on hover;
+      // otherwise barely-there — it keeps rattling, just transparently
+      const wantVisible = hoverShell || now - shellShownAt < 4000;
       const target = wantVisible ? 1 : 0.1;
       const rate = target > shellOpacity ? 5 : 0.3; // quick to appear, slow to fade
       shellOpacity += Math.max(-rate * dt, Math.min(rate * dt, target - shellOpacity));
