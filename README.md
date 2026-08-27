@@ -28,10 +28,32 @@ npm start
 
 ## Interacting
 
-- The window is click-through except over the crab and its bubble.
+- The window is click-through except over the crab, its bubble, and the shell.
 - **Click the crab** — it hops, and toggles the speech bubble on/off.
-- **Right-click the crab** (or the tray icon) — pause walking, open the GIF
-  capture frame, or quit.
+- **Right-click the crab** (or the tray icon) — send him home, pause walking,
+  open the GIF capture frame, or quit.
+
+## Sending him home 🐚
+
+Right-click → **Send him home** and the crab sprints to the far right and
+tucks into a small seashell. While he sleeps:
+
+- After a few seconds the shell **fades to barely-there** (20% opacity) and
+  stays that way; only hovering over it brings it back into focus.
+- The shell **rattles** when Claude or git activity comes in — even while
+  faded — it never shows the content, and the faster the updates arrive, the
+  harder it rattles.
+- Prefer a totally clear screen? Toggle **Hide in tray**: everything on
+  screen vanishes instantly — the tray icon becomes the shell, rattles
+  there when activity arrives, and clicking it wakes him. The crabcap
+  recorder keeps working the whole time.
+- **Click the shell** to wake him: he bursts out with zoomies proportional to
+  how much he missed, then settles down standing beside his shell spot.
+- Once woken, he's a home-body: he mostly stands at the far right, takes the
+  occasional stroll, and always wanders back home.
+
+Agents can do it too: `POST /crab/sleep` and `POST /crab/wake` on the control
+API.
 
 ## crabcap 🎥 — built-in GIF recorder
 

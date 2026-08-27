@@ -10,6 +10,19 @@ const WINDOW_HEIGHT = 340;
 let win = null;
 let tray = null;
 let paused = false;
+let sleeping = false;
+let shellInTray = false;
+let crabIcon = null;
+let shellIcons = [];
+
+function updateTrayIcon(frame = 0) {
+  if (!tray) return;
+  if (sleeping && shellInTray && shellIcons.length) {
+    tray.setImage(shellIcons[Math.min(frame, shellIcons.length - 1)]);
+  } else if (crabIcon) {
+    tray.setImage(crabIcon);
+  }
+}
 
 function positionWindow() {
   const { workArea } = screen.getPrimaryDisplay();
@@ -57,8 +70,31 @@ async function pollState() {
   win.webContents.send("state", { claude, git, paused });
 }
 
+const crabControl = {
+  sleep: () => { if (win && !win.isDestroyed()) win.webContents.send("go-home"); },
+  wake: () => { if (win && !win.isDestroyed()) win.webContents.send("wake-up"); },
+  setTray: (inTray) => {
+    shellInTray = !!inTray;
+    if (win && !win.isDestroyed()) win.webContents.send("shell-in-tray", shellInTray);
+    updateTrayIcon();
+    if (tray) tray.setContextMenu(buildMenu());
+  },
+  isAsleep: () => sleeping,
+  isInTray: () => shellInTray
+};
+
 function buildMenu() {
   return Menu.buildFromTemplate([
+    {
+      label: sleeping ? "Wake him up 🐚" : "Send him home 🐚",
+      click: () => (sleeping ? crabControl.wake() : crabControl.sleep())
+    },
+    {
+      label: "Hide in tray (crabcap still works)",
+      type: "checkbox",
+      checked: shellInTray,
+      click: () => crabControl.setTray(!shellInTray)
+    },
     {
       label: paused ? "Resume walking" : "Pause walking",
       click: () => {
@@ -79,6 +115,20 @@ function buildMenu() {
   ]);
 }
 
+ipcMain.on("sleep-state", (_e, isSleeping) => {
+  sleeping = isSleeping;
+  updateTrayIcon();
+  if (tray) tray.setContextMenu(buildMenu());
+});
+
+ipcMain.on("shell-icons", (_e, urls) => {
+  shellIcons = urls.map((u) => nativeImage.createFromDataURL(u).resize({ width: 16, height: 16 }));
+});
+
+ipcMain.on("tray-frame", (_e, frame) => {
+  updateTrayIcon(frame);
+});
+
 ipcMain.on("set-interactive", (_e, interactive) => {
   if (win && !win.isDestroyed()) {
     win.setIgnoreMouseEvents(!interactive, { forward: true });
@@ -91,10 +141,13 @@ ipcMain.on("show-menu", () => {
 
 ipcMain.on("tray-icon", (_e, dataUrl) => {
   if (tray) return;
-  const icon = nativeImage.createFromDataURL(dataUrl).resize({ width: 16, height: 16 });
-  tray = new Tray(icon);
+  crabIcon = nativeImage.createFromDataURL(dataUrl).resize({ width: 16, height: 16 });
+  tray = new Tray(crabIcon);
   tray.setToolTip("maximumcrab — your desk crab");
   tray.setContextMenu(buildMenu());
+  // clicking the tray shell wakes him, same as clicking the on-screen shell
+  // (unconditional: the renderer no-ops if he's already awake)
+  tray.on("click", () => crabControl.wake());
 });
 
 app.whenReady().then(() => {
@@ -103,7 +156,7 @@ app.whenReady().then(() => {
     pollState();
     setInterval(pollState, 3000);
   });
-  startControlServer(capture);
+  startControlServer(capture, crabControl);
 });
 
 app.on("window-all-closed", () => app.quit());
